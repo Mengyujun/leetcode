@@ -945,3 +945,154 @@ class LRUCache:
             self.tail.prev.next = node
             self.tail.prev = **node**
 ```
+
+### 215. 数组中的第K个最大元素 top-k问题 面试的高频考题
+    在未排序的数组中找到第 k 个最大的元素。请注意，你需要找的是数组排序后的第 k 个最大的元素，而不是第 k 个不同的元素。
+
+    示例 1:
+
+    输入: [3,2,1,5,6,4] 和 k = 2
+    输出: 5
+    示例 2:
+
+    输入: [3,2,3,1,2,4,5,5,6] 和 k = 4
+    输出: 4
+
+    来源：力扣（LeetCode）
+    链接：https://leetcode-cn.com/problems/kth-largest-element-in-an-array
+    著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。
+
+典型的top-k问题，重点关注下，大根堆和小根堆  保持堆内元素个数不变，最小的元素在堆顶，每次选择比较堆顶元素（用的是优先队列的）
+    具体思路： 建立只能存k个数字的小顶堆，其中最小元素在堆顶，遍历原数组，比堆顶元素（最小元素）大的应该放入堆内，则最终第k大的元素即为小顶堆的堆顶元素
+    向大小为 k的数组中添加元素的时间复杂度为O(logk)
+    另外的一个重点就是 partition的思想
+
+用java的优先级队列，其中用到了lambda表达式  lambda 表达式：(a, b) -> a - b 表示最小堆 关于堆需要进一步了解
+```
+import java.util.PriorityQueue;
+
+public class Solution {
+
+    public int findKthLargest(int[] nums, int k) {
+        int len = nums.length;
+        // 使用一个含有 k 个元素的最小堆
+        PriorityQueue<Integer> minHeap = new PriorityQueue<>(k, (a, b) -> a - b);
+        for (int i = 0; i < k; i++) {
+            minHeap.add(nums[i]);
+        }
+        for (int i = k; i < len; i++) {
+            // 看一眼，不拿出，因为有可能没有必要替换
+            Integer topEle = minHeap.peek();
+            // 只要当前遍历的元素比堆顶元素大，堆顶弹出，遍历的元素进去
+            if (nums[i] > topEle) {
+                minHeap.poll();
+                minHeap.add(nums[i]);
+            }
+        }
+        return minHeap.peek();
+    }
+}
+
+作者：liweiwei1419
+链接：https://leetcode-cn.com/problems/kth-largest-element-in-an-array/solution/partitionfen-er-zhi-zhi-you-xian-dui-lie-java-dai-/
+来源：力扣（LeetCode）
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+```
+
+用经典的partition的思想来解决问题（快速排序和核心，partition即以某元素为基准，小于该元素的放在这前面，大于此元素的放在后面，后续再递归操作）
+
+注意下不同快排思想  主要采用方法3  主要注意观察这个partition内部的区别 
+
+1. 交换法partition
+```
+class Solution:
+    def findKthLargest(self, nums: List[int], k: int) -> int:
+        #尝试使用一下快排-partition的思想
+        #将之逆序 用升序排序 则找的是n-k   注意此时的n-k即为index  可以直接比较
+        return self.partition(nums, 0, len(nums)-1, len(nums)-k)
+    
+    def partition(self, nums, left, right, index):
+        l, r = left, right
+        x = nums[l]
+        while l < r:
+            while (l < r and nums[r] >= x):
+                r -= 1
+            nums[l], nums[r] = nums[r], nums[l]
+            while (l < r and nums[l] <= x):
+                l += 1
+            nums[l], nums[r] = nums[r], nums[l]
+        
+        if l == index:
+            return nums[l]
+        if l < index:
+            return self.partition(nums, l+1, right, index)
+        else:
+            return self.partition(nums, left, l-1, index)
+```
+
+2. 挖坑法快排
+```
+class Solution:
+    def findKthLargest(self, nums: List[int], k: int) -> int:
+        #尝试使用一下快排-partition的思想
+        #将之逆序 用升序排序 则找的是n-k   注意此时的n-k即为index  可以直接比较
+        return self.partition(nums, 0, len(nums)-1, len(nums)-k)
+    
+    def partition(self, nums, left, right, index):
+        l, r = left, right
+        x = nums[l]
+        while l < r:
+            while (l < r and nums[r] >= x):
+                r -= 1
+            if l < r:
+                nums[l] = nums[r]
+                l += 1
+            while (l < r and nums[l] <= x):
+                l += 1
+            if l < r:
+                nums[r] = nums[l]
+                r -= 1
+        
+        nums[l] = x
+        
+        if l == index:
+            return nums[l]
+        if l < index:
+            return self.partition(nums, l+1, right, index)
+        else:
+            return self.partition(nums, left, l-1, index)
+```
+3. 另外一种 主要是partition内部的细微区别 (这种更加简单 主要用这个 不需要加if判断和++) 还有就是外层循环 实质一样
+```
+class Solution:
+    def findKthLargest(self, nums: List[int], k: int) -> int:
+        #尝试使用一下快排-partition的思想
+        #将之逆序 用升序排序 则找的是n-k   注意此时的n-k即为index  可以直接比较
+        if not nums:
+            return -1
+        l, r = 0, len(nums)-1
+        target = len(nums) - k
+        while l < r:
+            index = self.partition(nums, l , r)
+            if index == target:
+                return nums[index]
+            elif index < target:
+                l = index + 1
+            else:
+                r = index - 1
+        return nums[target]
+    
+    def partition(self, nums, left, right):
+        l, r = left, right
+        x = nums[l]
+        while l < r:
+            while (l < r and nums[r] >= x):
+                r -= 1
+            nums[l] = nums[r]
+            while (l < r and nums[l] <= x):
+                l += 1
+            nums[r] = nums[l]
+        
+        nums[l] = x
+        return l
+```
