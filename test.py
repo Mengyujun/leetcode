@@ -1,4 +1,4 @@
-#这是一个测试文件
-a = 100
-s = str(a)
-print(s[0], s[1])
+candidates = [i for i in range(10) ]
+
+new  = [i for i in candidates if i > 3]
+print(new)

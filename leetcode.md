@@ -1096,3 +1096,59 @@ class Solution:
         nums[l] = x
         return l
 ```
+
+
+### 219. 存在重复元素 II
+    给定一个整数数组和一个整数 k，判断数组中是否存在两个不同的索引 i 和 j，使得 nums [i] = nums [j]，并且 i 和 j 的差的绝对值最大为 k。
+
+    示例 1:
+
+    输入: nums = [1,2,3,1], k = 3
+    输出: true
+    示例 2:
+
+    输入: nums = [1,0,1,1], k = 1
+    输出: true
+
+    来源：力扣（LeetCode）
+    链接：https://leetcode-cn.com/problems/contains-duplicate-ii
+    著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。
+
+一开始的常规解法，出现了超时的问题
+```
+class Solution:
+    def containsNearbyDuplicate(self, nums: List[int], k: int) -> bool:
+        if k >= len(nums):
+            k = len(nums)-1
+        #注意题目中要求的是 最大为k，可以小于k
+        for i in range(len(nums)-k):
+            for j in range(i+1, i+k+1):
+                if nums[i] == nums[j]:
+                    return True
+        #注意在最后的k个数中没有进行比较
+        if len(nums[len(nums)-k:]) != len(set(nums[len(nums)-k:])):
+            return True
+        return False
+        #最后还是会出现超时 最后一个测试用例数目很大
+
+        #或者使用另外的一种遍历方式  主要是其中的min函数，来考察范围，而不是自己上面的那种
+        #for i in range(len(nums)-1):
+        #    for j in range(i+1, min(len(nums), i+k+1)):
+        #        if nums[i] == nums[j]:
+```
+
+使用hash table 来维护k个滑动窗口   需要一个支持在常量时间内完成 搜索，删除，插入 操作的数据结构，那就是散列表(hash table) 注意一下
+很好的方法，记忆学习，相当于i在前，用一个k长度的散列表来维护之前的k个元素，每次遍历新的元素，判断是否在散列表内
+```
+class Solution:
+    def containsNearbyDuplicate(self, nums: List[int], k: int) -> bool:
+        hs = set() 
+        for i in range(len(nums)):
+            if nums[i] in hs:
+                return True
+            else:
+                hs.add(nums[i])
+            if len(hs) > k:
+                hs.remove(nums[i-k])
+        return False
+```
