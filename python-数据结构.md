@@ -182,5 +182,16 @@ tmp = heappop(heap)
 
     
 
-11. 撒旦
+11. python 中set的操作
+
+    ```
+    # 向 set “s”中增加元素 x
+    s.add(x)
+    # 从 set “s”中删除元素 x, 如果不存在则引发 KeyError
+    s.remove(x)
+    # 如果在 set “s”中存在元素 x, 则删除
+    s.discard(x)
+    ```
+
+12. ssd
 
